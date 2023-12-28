@@ -1,7 +1,19 @@
 import axios from "axios";
 
-export const axiosInstance = axios.create({
+// Create an Axios instance with a default authorization header
+const axiosInstance = axios.create({
   headers: {
-    authorization: `Bearer ${localStorage.getItem("token")}`,
+    Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
   },
 });
+
+axiosInstance.interceptors.request.use((config) => {
+  // Update the Authorization header if the token changes
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export default axiosInstance;

@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { RegisterUser } from "../../apicalls/users";
+import { HideLoader , ShowLoader } from "../../redux/loaderSlice";
+import toast from "react-hot-toast";
 
 const Register = () => {
 
@@ -29,6 +31,12 @@ const Register = () => {
     }
   };
 
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      navigate("/");
+    }
+  }, []);
+
   return (
     <div className="h-screen bg-primary flex items-center justify-center">
       <div className="bg-white shadow-md p-5 flex flex-col gap-5 w-96">
@@ -42,7 +50,7 @@ const Register = () => {
         <input
           type="text"
           value={user.name}
-         onChange={(e) => setUser({ ...user, name: e.target.value })}
+          onChange={(e) => setUser({ ...user, name: e.target.value })}
           placeholder="Enter your name"
         />
         <input
@@ -60,14 +68,18 @@ const Register = () => {
 
         <button
           className={
-            //user.name && user.email && user.password
-               "contained-btn"
+            user.name && user.email && user.password
+              ? "contained-btn"
+              : "disabled-btn"
           }
-          //onClick={register}
+          onClick={register}
         >
           Register
         </button>
-        
+
+        <Link to="/login" className="underline">
+          Already have an account? Login
+        </Link>
       </div>
     </div>
   );
