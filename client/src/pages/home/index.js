@@ -15,7 +15,7 @@ const Home = () => {
       </div>
 
       
-      <div className='w-full'>
+      <div className='w-full p-5'>
         {selectedChat && <ChatArea/>}
       </div>
     </div>

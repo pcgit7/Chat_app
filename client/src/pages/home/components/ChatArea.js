@@ -3,59 +3,63 @@ import { useDispatch, useSelector } from "react-redux";
 import { HideLoader, ShowLoader } from "../../../redux/loaderSlice";
 import { getAllMessage, sendMessage } from "../../../apicalls/message";
 import toast from "react-hot-toast";
+import moment from "moment";
 
 const ChatArea = () => {
   const { selectedChat, user } = useSelector((state) => state.userReducer);
   const receipentUser = selectedChat.members.find((mem) => mem._id != user._id);
-  const [newMessage , setNewMessage] = useState('');
-  const [messages , setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [messages, setMessages] = useState([]);
 
   const dispatch = useDispatch();
 
   const getMessages = async () => {
     try {
-      console.log(selectedChat._id);
       dispatch(ShowLoader());
       const response = await getAllMessage(selectedChat._id);
       dispatch(HideLoader());
-      if(response.success){
+      if (response.success) {
         setMessages(response.data);
       }
     } catch (error) {
       dispatch(HideLoader());
       console.log(error);
     }
-  }
+  };
   const sendNewMessage = async () => {
     try {
       const message = {
-        chat : selectedChat._id,
-        sender : user._id,
-        text  : newMessage
+        chat: selectedChat._id,
+        sender: user._id,
+        text: newMessage,
       };
 
       dispatch(ShowLoader());
       const response = await sendMessage(message);
       dispatch(HideLoader());
 
-      if(response.success){
+      if (response.success) {
         toast.success(response.message);
-        setNewMessage('');
-      }
-      else {
+        setNewMessage("");
+      } else {
         dispatch(HideLoader());
         toast.error(response.message);
       }
     } catch (error) {
-      dispatch(HideLoader()); 
+      dispatch(HideLoader());
       toast.error(error.message);
     }
   };
 
-  useEffect( () => {
-    if(selectedChat)
-    getMessages();
-  },[selectedChat])
+  const clearUnreadMessages = () => {
+  };
+
+  useEffect(() => {
+    if (selectedChat) getMessages();
+    if (selectedChat?.lastMessage?.sender !== user._id) {
+      clearUnreadMessages();
+    }
+  }, [selectedChat]);
 
   return (
     <div className="flex flex-col justify-between h-[85vh] w-full bg-white rounded-2xl border p-4">
@@ -79,7 +83,33 @@ const ChatArea = () => {
         </div>
         <hr />
       </div>
-      <div>Chat messages</div>
+      <div className="h-[55vh] overflow-y-scroll p-5">
+        <div className="flex flex-col gap-2">
+          {messages.map((message) => {
+            const isCurrentUserSender = message.sender === user._id;
+            return (
+              <div className={`flex ${isCurrentUserSender && "justify-end"}`}>
+                <div className="flex flex-col gap-1">
+                  <h1
+                    className={`${
+                      isCurrentUserSender
+                        ? "bg-primary text-white rounded-bl-none"
+                        : "bg-gray-300 text-primary rounded-tr-none"
+                    } p-2 rounded-xl`}
+                  >
+                    {message.text}
+                  </h1>
+                  <h1>{moment(message.createdAt).format("hh:mm A")}</h1>
+                </div>
+                {isCurrentUserSender && (
+                  <i class={`ri-check-double-line text-lg p-1
+                  ${message.read ? "text-green-700 " : "text-gray-700"}`}></i>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
       <div>
         <input
           type="text"
