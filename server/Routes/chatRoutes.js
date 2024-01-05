@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const Chat = require("../models/chatModel");
+const Chat = require("../Models/chatModel");
 const Message = require("../Models/messageModel");
 const authMiddleware = require("../middlewares/authMiddleware");
 
@@ -34,7 +34,7 @@ router.get("/get-all-chats", authMiddleware, async (req, res) => {
       members: {
         $in: [req.body.userId],
       },
-    });
+    }).populate("members").sort({updatedAt : -1});
       
     res.send({
       success: true,
