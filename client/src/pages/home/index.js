@@ -8,16 +8,18 @@ const Home = () => {
   const [searchKey , setSearchKey ] = useState('');
   const {selectedChat} = useSelector(state => state.userReducer);
   return (
-    <div className='flex'>
-      <div className='w-96 m-4'>
+    <div className="flex gap-5">
+      <div className="w-96">
       <UserSearch searchKey={searchKey} setSearchKey={setSearchKey} />
       <UsersList searchKey={searchKey}/>
       </div>
 
       
-      <div className='w-full p-5'>
-        {selectedChat && <ChatArea/>}
-      </div>
+      {selectedChat && (
+        <div className="w-full">
+          <ChatArea />
+        </div>
+      )}
     </div>
   )
 }

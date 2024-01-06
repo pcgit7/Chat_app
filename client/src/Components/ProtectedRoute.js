@@ -59,7 +59,7 @@ function ProtectedRoute({ children }) {
               navigate("/");
             }}
           >
-            SHEYCHAT
+            BAATE
           </h1>
         </div>
         

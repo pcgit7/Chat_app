@@ -43,14 +43,15 @@ const UsersList = ({ searchKey }) => {
   };
 
   const getData = () => {
-    const data = allUsers.filter(
-      (userObj) =>
-        (searchKey &&
-          userObj.name.toLowerCase().includes(searchKey.toLowerCase())) ||
-        allChats.some((chat) =>
-          chat.members.map((mem) => mem._id).includes(userObj._id)
-        )
+
+    //if search key is empty then return all chats , else return filtered chats and users
+    if (searchKey === "") return allChats;
+
+    const data = allUsers.filter((user) =>
+      user.name.toLowerCase().includes(searchKey.toLowerCase())
     );
+
+    console.log(data);
     return data;
   };
 
@@ -62,6 +63,9 @@ const UsersList = ({ searchKey }) => {
   };
 
   const getLastMessage = (userObj) => {
+
+    if(!userObj)
+    return "";
     const chat = allChats.find((chat) =>
       chat.members.map((mem) => mem._id).includes(userObj._id)
     );
@@ -85,10 +89,17 @@ const UsersList = ({ searchKey }) => {
   };
 
   const getUnReadMessages = (userObj) => {
+    if(!userObj)
+    return "";
+
     const chat = allChats.find((chat) =>
-      chat.members.map((mem) => mem._id).includes(userObj._id)
+      chat.members.map((mem) => mem._id).includes(userObj?._id)
     );
-    if (chat && chat.unreadMessages && chat?.lastMessage.sender !== userObj._id) {
+    if (
+      chat &&
+      chat.unreadMessages &&
+      chat?.lastMessage.sender !== userObj._id
+    ) {
       return (
         <div className="bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
           {chat?.unreadMessages}
@@ -99,49 +110,55 @@ const UsersList = ({ searchKey }) => {
 
   return (
     <div className="flex flex-col gap-3 mt-5">
-      {getData().map((userObj) => (
-        <div
-          className={`shadow border p-5 rounded-2xl bg-white flex justify-between items-center cursor-pointer
+      {getData().map((chatOruserObj) => {
+        let userObj = chatOruserObj;
+
+        if(chatOruserObj.members){
+          userObj = chatOruserObj.members.find( (mem) => mem._id !== user._id);
+        }
+        return (
+          <div
+            className={`shadow border p-5 rounded-2xl bg-white flex justify-between items-center cursor-pointer
             ${getIsSelectedChatOrNot(userObj) && "border-primary border-2"}`}
-          key={userObj._id}
-          onClick={() => openChatArea(userObj._id)}
-        >
-          <div className="flex gap-5 items-center">
-            {userObj.profilePic && (
-              <img
-                src={userObj.profilePic}
-                alt="profile pic"
-                className="w-10 h-10 rounded-full"
-              />
-            )}
-            {!userObj.profilePic && (
-              <div>
-                <h1 className="uppercase font-semibold text-2xl">
-                  {userObj.name[0]}
-                </h1>
+            key={userObj?._id}
+            onClick={() => openChatArea(userObj?._id)}
+          >
+            <div className="flex gap-5 items-center">
+              {userObj?.profilePic && (
+                <img
+                  src={userObj.profilePic}
+                  alt="profile pic"
+                  className="w-10 h-10 rounded-full"
+                />
+              )}
+              {!userObj?.profilePic && (
+                <div>
+                  <h1 className="uppercase font-semibold text-2xl">
+                    {userObj?.name[0]}
+                  </h1>
+                </div>
+              )}
+              <div className="flex flex-col gap-1">
+                <div className="flex gap-1">
+                  <h1>{userObj?.name}</h1>
+                  {getUnReadMessages(userObj)}
+                </div>
+
+                <h1>{getLastMessage(userObj)}</h1>
               </div>
-            )}
-            <div className="flex flex-col gap-1">
-              <div className="flex gap-1">
-              <h1>{userObj.name}</h1>
-              {getUnReadMessages(userObj)}
-              </div>
-              
-              <h1>{getLastMessage(userObj)}</h1>
             </div>
-          
+            <div onClick={() => createNewChatHandler(userObj?._id)}>
+              {!allChats?.find((chat) =>
+                chat.members.map((mem) => mem._id).includes(userObj?._id)
+              ) && (
+                <button className="border-primary border text-primary bg-white p-1 rounded">
+                  create chat
+                </button>
+              )}
+            </div>
           </div>
-          <div onClick={() => createNewChatHandler(userObj._id)}>
-            {!allChats?.find((chat) =>
-              chat.members.map((mem) => mem._id).includes(userObj._id)
-            ) && (
-              <button className="border-primary border text-primary bg-white p-1 rounded">
-                create chat
-              </button>
-            )}
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

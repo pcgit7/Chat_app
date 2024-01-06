@@ -4,9 +4,13 @@ import { HideLoader, ShowLoader } from "../../../redux/loaderSlice";
 import { getAllMessage, sendMessage } from "../../../apicalls/message";
 import toast from "react-hot-toast";
 import moment from "moment";
+import { ClearChatMessages } from "../../../apicalls/chat";
+import { SetAllChats } from "../../../redux/userSlice";
 
 const ChatArea = () => {
-  const { selectedChat, user } = useSelector((state) => state.userReducer);
+  const { selectedChat, user, allChats } = useSelector(
+    (state) => state.userReducer
+  );
   const receipentUser = selectedChat.members.find((mem) => mem._id != user._id);
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState([]);
@@ -51,7 +55,22 @@ const ChatArea = () => {
     }
   };
 
-  const clearUnreadMessages = () => {
+  const clearUnreadMessages = async () => {
+    try {
+      const response = await ClearChatMessages(selectedChat._id);
+
+      if (response.success) {
+        const updatedChats = allChats.map((chat) => {
+          if (chat._id === selectedChat._id) {
+            return response.data;
+          }
+          return chat;
+        });
+        dispatch(SetAllChats(updatedChats));
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   useEffect(() => {
@@ -62,7 +81,7 @@ const ChatArea = () => {
   }, [selectedChat]);
 
   return (
-    <div className="flex flex-col justify-between h-[85vh] w-full bg-white rounded-2xl border p-4">
+    <div className="flex flex-col justify-between h-[82vh] w-full bg-white rounded-2xl border p-4">
       <div>
         <div className="flex gap-5 items-center mb-2">
           {receipentUser.profilePic && (
@@ -102,8 +121,10 @@ const ChatArea = () => {
                   <h1>{moment(message.createdAt).format("hh:mm A")}</h1>
                 </div>
                 {isCurrentUserSender && (
-                  <i class={`ri-check-double-line text-lg p-1
-                  ${message.read ? "text-green-700 " : "text-gray-700"}`}></i>
+                  <i
+                    class={`ri-check-double-line text-lg p-1
+                  ${message.read ? "text-green-700 " : "text-gray-700"}`}
+                  ></i>
                 )}
               </div>
             );
