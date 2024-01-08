@@ -7,7 +7,7 @@ import moment from "moment";
 import { ClearChatMessages } from "../../../apicalls/chat";
 import { SetAllChats } from "../../../redux/userSlice";
 
-const ChatArea = () => {
+const ChatArea = ({socket}) => {
   const { selectedChat, user, allChats } = useSelector(
     (state) => state.userReducer
   );
@@ -38,9 +38,16 @@ const ChatArea = () => {
         text: newMessage,
       };
 
-      dispatch(ShowLoader());
+      socket.emit("send-message" , {
+        ...message,
+        members : selectedChat.members.map( (mem) => mem._id),
+        createdAt : moment().format('DD-MM-YYYY hh:mm:ss'),
+        read : false,
+      });
+
+      //dispatch(ShowLoader());
       const response = await sendMessage(message);
-      dispatch(HideLoader());
+      //dispatch(HideLoader());
 
       if (response.success) {
         toast.success(response.message);
@@ -78,6 +85,12 @@ const ChatArea = () => {
     if (selectedChat?.lastMessage?.sender !== user._id) {
       clearUnreadMessages();
     }
+
+    //recieve message from reciver using socket
+    socket.on('recieve-message',(message) => {
+      setMessages((prev) => [...prev,message]);
+    });
+
   }, [selectedChat]);
 
   return (

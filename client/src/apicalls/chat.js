@@ -28,4 +28,4 @@ export const ClearChatMessages = async (chatId) => {
     } catch (error) {
       throw error;
     }
-  }
+  };
