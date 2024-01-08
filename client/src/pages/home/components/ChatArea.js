@@ -6,8 +6,9 @@ import toast from "react-hot-toast";
 import moment from "moment";
 import { ClearChatMessages } from "../../../apicalls/chat";
 import { SetAllChats } from "../../../redux/userSlice";
+import store from "../../../redux/store";
 
-const ChatArea = ({socket}) => {
+const ChatArea = ({ socket }) => {
   const { selectedChat, user, allChats } = useSelector(
     (state) => state.userReducer
   );
@@ -38,11 +39,11 @@ const ChatArea = ({socket}) => {
         text: newMessage,
       };
 
-      socket.emit("send-message" , {
+      socket.emit("send-message", {
         ...message,
-        members : selectedChat.members.map( (mem) => mem._id),
-        createdAt : moment().format('DD-MM-YYYY hh:mm:ss'),
-        read : false,
+        members: selectedChat.members.map((mem) => mem._id),
+        createdAt: moment().format("DD-MM-YYYY hh:mm:ss"),
+        read: false,
       });
 
       //dispatch(ShowLoader());
@@ -87,11 +88,20 @@ const ChatArea = ({socket}) => {
     }
 
     //recieve message from reciver using socket
-    socket.on('recieve-message',(message) => {
-      setMessages((prev) => [...prev,message]);
-    });
 
+    socket.off("receive-message").on("receive-message", (message) => {
+      const currentChat = store.getState().userReducer.selectedChat;
+      if (currentChat._id === message.chat) {
+        setMessages((prev) => [...prev, message]);
+      }
+      console.log(messages);
+    });
   }, [selectedChat]);
+
+  useEffect(() => {
+    const messageContainer = document.getElementById("messages");
+    messageContainer.scrollTop = messageContainer.scrollHeight;
+  }, [messages]);
 
   return (
     <div className="flex flex-col justify-between h-[82vh] w-full bg-white rounded-2xl border p-4">
@@ -115,7 +125,7 @@ const ChatArea = ({socket}) => {
         </div>
         <hr />
       </div>
-      <div className="h-[55vh] overflow-y-scroll p-5">
+      <div className="h-[55vh] overflow-y-scroll p-5" id="messages">
         <div className="flex flex-col gap-2">
           {messages.map((message) => {
             const isCurrentUserSender = message.sender === user._id;

@@ -26,7 +26,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on('send-message',(message) => {
-        io.to(message.members[0]).to(message.members[1]).emit('recieve-message',message);
+        io.to(message.members[0]).to(message.members[1]).emit('receive-message',message);
     });
 });
 
