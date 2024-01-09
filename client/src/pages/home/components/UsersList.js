@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createNewChat } from "../../../apicalls/chat";
 import { SetAllChats, SetSelectedChat } from "../../../redux/userSlice";
 import { HideLoader, ShowLoader } from "../../../redux/loaderSlice";
 import toast from "react-hot-toast";
 import moment from "moment";
+import store from '../../../redux/store';
 
-const UsersList = ({ searchKey }) => {
+const UsersList = ({ searchKey,socket }) => {
   const { allUsers, allChats, user, selectedChat } = useSelector(
     (state) => state.userReducer
   );
@@ -98,7 +99,7 @@ const UsersList = ({ searchKey }) => {
     if (
       chat &&
       chat.unreadMessages &&
-      chat?.lastMessage?.sender !== userObj._id
+      chat?.lastMessage?.sender == userObj._id
     ) {
       return (
         <div className="bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -107,6 +108,34 @@ const UsersList = ({ searchKey }) => {
       );
     }
   };
+
+  useEffect(() => {
+     // if the chat area opened is not equal to chat in message , then increase unread messages by 1 and update last message
+    socket.off("receive-message").on("receive-message",(message) => {
+      console.log(message);
+      const currentSelectedChat = store.getState().userReducer.selectedChat;
+      const tempAllChats = store.getState().userReducer.allChats;
+
+      if(currentSelectedChat?._id !== message.chat){
+        const updatedAllChat = tempAllChats.map( (chat) => {
+          if(chat._id === message.chat){
+            return {
+              ...chat,
+              unreadMessages : (chat?.unreadMessages || 0) + 1,
+            };
+          }
+
+          return chat;
+        });
+
+        console.log(tempAllChats);
+        dispatch(SetAllChats(updatedAllChat));
+        console.log("after update",store.getState().userReducer.allChats);
+
+      }
+    });
+    
+  },[])
 
   return (
     <div className="flex flex-col gap-3 mt-5">

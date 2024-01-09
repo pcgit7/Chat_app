@@ -12,7 +12,7 @@ const ChatArea = ({ socket }) => {
   const { selectedChat, user, allChats } = useSelector(
     (state) => state.userReducer
   );
-  const receipentUser = selectedChat.members.find((mem) => mem._id != user._id);
+  const receipentUser = selectedChat.members.find((mem) => mem._id !== user._id);
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState([]);
 
