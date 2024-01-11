@@ -43,6 +43,15 @@ io.on("connection", (socket) => {
   //typing
   socket.on("typing",(data) => {
     io.to(data.members[0]).to(data.members[1]).emit('started-typing',data);
+  });
+
+  //online users
+  let onlineUsers = [];
+  socket.on("came-online" ,userId => {
+    if(!onlineUsers.includes(userId))
+    onlineUsers.push(userId);
+
+    io.emit("online-users",onlineUsers);
   })
 });
 

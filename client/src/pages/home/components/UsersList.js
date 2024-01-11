@@ -7,12 +7,12 @@ import toast from "react-hot-toast";
 import moment from "moment";
 import store from '../../../redux/store';
 
-const UsersList = ({ searchKey,socket }) => {
+const UsersList = ({ searchKey,socket,onlineUsers }) => {
   const { allUsers, allChats, user, selectedChat } = useSelector(
     (state) => state.userReducer
   );
   const dispatch = useDispatch();
-
+  
   const createNewChatHandler = async (recepientUserId) => {
     try {
       dispatch(ShowLoader());
@@ -112,7 +112,6 @@ const UsersList = ({ searchKey,socket }) => {
   useEffect(() => {
      // if the chat area opened is not equal to chat in message , then increase unread messages by 1 and update last message
     socket.off("receive-message").on("receive-message",(message) => {
-      console.log(message);
       const currentSelectedChat = store.getState().userReducer.selectedChat;
       const tempAllChats = store.getState().userReducer.allChats;
 
@@ -167,7 +166,14 @@ const UsersList = ({ searchKey,socket }) => {
               )}
               <div className="flex flex-col gap-1">
                 <div className="flex gap-1">
-                  <h1>{userObj?.name}</h1>
+                  <div className="flex gap-1 items-center">
+                    <h1>{userObj?.name}</h1>
+                    {onlineUsers?.includes(userObj?._id) && (
+                      <div>
+                        <div className="bg-green-700 h-3 w-3 rounded-full"></div>
+                      </div>
+                    )}
+                  </div>
                   {getUnReadMessages(userObj)}
                 </div>
 
