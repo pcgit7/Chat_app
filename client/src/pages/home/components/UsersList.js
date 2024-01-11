@@ -12,7 +12,7 @@ const UsersList = ({ searchKey,socket,onlineUsers }) => {
     (state) => state.userReducer
   );
   const dispatch = useDispatch();
-  
+
   const createNewChatHandler = async (recepientUserId) => {
     try {
       dispatch(ShowLoader());
@@ -113,7 +113,7 @@ const UsersList = ({ searchKey,socket,onlineUsers }) => {
      // if the chat area opened is not equal to chat in message , then increase unread messages by 1 and update last message
     socket.off("receive-message").on("receive-message",(message) => {
       const currentSelectedChat = store.getState().userReducer.selectedChat;
-      const tempAllChats = store.getState().userReducer.allChats;
+      let tempAllChats = store.getState().userReducer.allChats;
 
       //updation of chat for which message has arrived
       if(currentSelectedChat?._id !== message.chat){
@@ -128,8 +128,16 @@ const UsersList = ({ searchKey,socket,onlineUsers }) => {
           return chat;
         });
 
-        dispatch(SetAllChats(updatedAllChat));
+        tempAllChats = updatedAllChat;
       }
+
+      //always latest message will be on the top
+      const latestChat = tempAllChats.find((chat) => chat._id === message.chat);
+      const otherChats = tempAllChats.filter(
+        (chat) => chat._id !== message.chat
+      );
+      tempAllChats = [latestChat, ...otherChats];
+      dispatch(SetAllChats(tempAllChats));
     });
     
   },[])

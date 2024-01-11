@@ -2,13 +2,12 @@ import React, { useEffect } from "react";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import {  GetAllUsers, GetCurrentUser } from "../apicalls/users";
+import { GetAllUsers, GetCurrentUser } from "../apicalls/users";
 import { GetAllChats } from "../apicalls/chat";
 import { HideLoader, ShowLoader } from "../redux/loaderSlice";
 import { SetAllUsers, SetUser, SetAllChats } from "../redux/userSlice";
 
 function ProtectedRoute({ children }) {
-
   const { user } = useSelector((state) => state.userReducer);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -29,14 +28,12 @@ function ProtectedRoute({ children }) {
         localStorage.removeItem("token");
         navigate("/login");
       }
-      
     } catch (error) {
       dispatch(HideLoader());
       toast.error(error.message);
       localStorage.removeItem("token");
       navigate("/login");
     }
-    
   };
 
   useEffect(() => {
@@ -62,7 +59,34 @@ function ProtectedRoute({ children }) {
             BAATE
           </h1>
         </div>
-        
+        <div className="flex gap-2 text-md items-center bg-white p-2 rounded">
+          {user?.profilePic && (
+            <img
+              src={user?.profilePic}
+              alt="profile"
+              className="h-8 w-8 rounded-full object-cover"
+            />
+          )}
+          {!user?.profilePic && (
+            <i class="ri-shield-user-line text-primary"></i>
+          )}
+          <h1
+            className="underline text-primary cursor-pointer"
+            onClick={() => {
+              navigate("/profile");
+            }}
+          >
+            {user?.name}
+          </h1>
+
+          <i
+            class="ri-logout-circle-r-line ml-5 text-xl cursor-pointer text-primary"
+            onClick={() => {
+              localStorage.removeItem("token");
+              navigate("/login");
+            }}
+          ></i>
+        </div>
       </div>
 
       {/* content (pages) */}

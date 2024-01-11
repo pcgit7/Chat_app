@@ -32,12 +32,13 @@ const ChatArea = ({ socket }) => {
       console.log(error);
     }
   };
-  const sendNewMessage = async () => {
+  const sendNewMessage = async (imageData) => {
     try {
       const message = {
         chat: selectedChat._id,
         sender: user._id,
         text: newMessage,
+        image : imageData
       };
 
       socket.emit("send-message", {
@@ -86,6 +87,16 @@ const ChatArea = ({ socket }) => {
     } catch (error) {
       toast.error(error.message);
     }
+  };
+
+  const imageUploadHandler = (e) => {
+
+    const file = e.target.files[0];
+    const reader = new FileReader(file);
+    reader.readAsDataURL(file);
+    reader.onloadend = async () => {
+      sendNewMessage(reader.result);
+    };
   };
 
   useEffect(() => {
@@ -181,9 +192,7 @@ const ChatArea = ({ socket }) => {
           )}
           <h1 className="uppercase">{receipentUser.name}</h1>
           {isTyping && (
-            <h2 className="text-blue-500 text-primary  p-2 w-max">
-              typing...
-            </h2>
+            <h2 className="text-blue-500 text-primary  p-2 w-max">typing...</h2>
           )}
         </div>
         <hr />
@@ -204,6 +213,13 @@ const ChatArea = ({ socket }) => {
                   >
                     {message.text}
                   </h1>
+                  {message.image && (
+                    <img
+                      src={message.image}
+                      alt="message image"
+                      className="w-24 h-24 rounded-xl"
+                    />
+                  )}
                   <h1>{moment(message.createdAt).format("hh:mm A")}</h1>
                 </div>
                 {isCurrentUserSender && (
@@ -218,6 +234,18 @@ const ChatArea = ({ socket }) => {
         </div>
       </div>
       <div>
+        <label for="file">
+          <i class="ri-link cursor-pointer text-xl" typeof="file"></i>
+          <input
+            type="file"
+            id="file"
+            style={{
+              display: "none",
+            }}
+            accept="image/gif,image/jpeg,image/jpg,image/png"
+            onChange={imageUploadHandler}
+          />
+        </label>
         <input
           type="text"
           placeholder="Type a message"

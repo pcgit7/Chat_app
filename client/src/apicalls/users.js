@@ -5,7 +5,7 @@ export const LoginUser = async (user) => {
     const response = await axiosInstance.post("/api/users/login", user);
     return response.data;
   } catch (error) {
-    return error.response.data;
+    throw error;
   }
 };
 
@@ -14,7 +14,7 @@ export const RegisterUser = async (user) => {
     const response = await axiosInstance.post("/api/users/register", user);
     return response.data;
   } catch (error) {
-    return error.response.data;
+    throw error;
   }
 };
 
@@ -23,8 +23,7 @@ export const GetCurrentUser = async () => {
     const response = await axiosInstance.get("/api/users/get-current-user");
     return response.data;
   } catch (error) {
-    console.log(error);
-    return error.response.data;
+    throw error;
   }
 };
 
@@ -33,7 +32,7 @@ export const GetAllUsers = async () => {
     const response = await axiosInstance.get("/api/users/get-all-users");
     return response.data;
   } catch (error) {
-    return error.response.data;
+    throw error;
   }
 };
 
@@ -44,6 +43,6 @@ export const UpdateProfilePicture = async (image) => {
     });
     return response.data;
   } catch (error) {
-    return error.response.data;
+    throw error;
   }
 };
