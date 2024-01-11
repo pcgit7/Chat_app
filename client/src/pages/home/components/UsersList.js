@@ -99,7 +99,7 @@ const UsersList = ({ searchKey,socket }) => {
     if (
       chat &&
       chat.unreadMessages &&
-      chat?.lastMessage?.sender == userObj._id
+      chat?.lastMessage?.sender === userObj._id
     ) {
       return (
         <div className="bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -116,6 +116,7 @@ const UsersList = ({ searchKey,socket }) => {
       const currentSelectedChat = store.getState().userReducer.selectedChat;
       const tempAllChats = store.getState().userReducer.allChats;
 
+      //updation of chat for which message has arrived
       if(currentSelectedChat?._id !== message.chat){
         const updatedAllChat = tempAllChats.map( (chat) => {
           if(chat._id === message.chat){
@@ -128,10 +129,7 @@ const UsersList = ({ searchKey,socket }) => {
           return chat;
         });
 
-        console.log(tempAllChats);
         dispatch(SetAllChats(updatedAllChat));
-        console.log("after update",store.getState().userReducer.allChats);
-
       }
     });
     

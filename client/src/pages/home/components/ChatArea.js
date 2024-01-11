@@ -65,6 +65,12 @@ const ChatArea = ({ socket }) => {
 
   const clearUnreadMessages = async () => {
     try {
+
+      socket.emit("clear-unread-messages",{
+        chat : selectedChat._id,
+        members : selectedChat.members.map( (mem) => mem._id) 
+      });
+
       const response = await ClearChatMessages(selectedChat._id);
 
       if (response.success) {
@@ -94,7 +100,44 @@ const ChatArea = ({ socket }) => {
       if (currentChat._id === message.chat) {
         setMessages((prev) => [...prev, message]);
       }
-      console.log(messages);
+      
+      if(currentChat._id === message.chat && message.sender !== user._id){
+        console.log("hhhh");
+        clearUnreadMessages();
+      }
+
+      //clear unread message from server using socket
+      socket.off("unread-messages-cleared").on("unread-messages-cleared",(data) => {
+        const currentChat = store.getState().userReducer.selectedChat;
+        const tempAllChats = store.getState().userReducer.allChats;
+
+        if(currentChat._id === data.chat){
+          //update unreadmessages count in selected chat
+          const updatedChat = tempAllChats.map((chat) => {
+            if(chat._id === data.chat){
+              return {
+                ...chat,
+                unreadMessages : 0
+              };
+            }
+
+            return chat;
+          });
+          dispatch(SetAllChats(updatedChat));
+
+          //set all messages all as read
+          setMessages((preMessages) => {
+            return preMessages.map( (message) => {
+              return {
+                ...message,
+                read : true
+              };
+            });
+          });
+
+        }
+      });
+      
     });
   }, [selectedChat]);
 
