@@ -39,6 +39,11 @@ io.on("connection", (socket) => {
       .to(data.members[1])
       .emit("unread-messages-cleared", data);
   });
+
+  //typing
+  socket.on("typing",(data) => {
+    io.to(data.members[0]).to(data.members[1]).emit('started-typing',data);
+  })
 });
 
 app.use("/api/users", userRoutes);

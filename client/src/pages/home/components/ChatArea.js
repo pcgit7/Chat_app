@@ -15,6 +15,7 @@ const ChatArea = ({ socket }) => {
   const receipentUser = selectedChat.members.find((mem) => mem._id !== user._id);
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const [isTyping , setIsTyping] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -102,43 +103,57 @@ const ChatArea = ({ socket }) => {
       }
       
       if(currentChat._id === message.chat && message.sender !== user._id){
-        console.log("hhhh");
         clearUnreadMessages();
       }
-
-      //clear unread message from server using socket
-      socket.off("unread-messages-cleared").on("unread-messages-cleared",(data) => {
-        const currentChat = store.getState().userReducer.selectedChat;
-        const tempAllChats = store.getState().userReducer.allChats;
-
-        if(currentChat._id === data.chat){
-          //update unreadmessages count in selected chat
-          const updatedChat = tempAllChats.map((chat) => {
-            if(chat._id === data.chat){
-              return {
-                ...chat,
-                unreadMessages : 0
-              };
-            }
-
-            return chat;
-          });
-          dispatch(SetAllChats(updatedChat));
-
-          //set all messages all as read
-          setMessages((preMessages) => {
-            return preMessages.map( (message) => {
-              return {
-                ...message,
-                read : true
-              };
-            });
-          });
-
-        }
-      });
-      
     });
+
+    //clear unread message from server using socket
+    socket.off("unread-messages-cleared").on("unread-messages-cleared",(data) => {
+      const currentChat = store.getState().userReducer.selectedChat;
+      const tempAllChats = store.getState().userReducer.allChats;
+
+      if(currentChat._id === data.chat){
+        //update unreadmessages count in selected chat
+        const updatedChat = tempAllChats.map((chat) => {
+          if(chat._id === data.chat){
+            return {
+              ...chat,
+              unreadMessages : 0
+            };
+          }
+
+          return chat;
+        });
+        dispatch(SetAllChats(updatedChat));
+
+        //set all messages all as read
+        setMessages((preMessages) => {
+          return preMessages.map( (message) => {
+            return {
+              ...message,
+              read : true
+            };
+          });
+        });
+
+      }
+    });
+
+    //real-time typing
+    let typingTimeout = null;
+    socket.off('started-typing').on('started-typing',(data) => {
+      const currentChat = store.getState().userReducer.selectedChat;
+      
+      clearTimeout(typingTimeout);
+      if(currentChat._id === data.chat && user._id !== data.sender){
+        setIsTyping(true);
+      }
+
+      typingTimeout = setTimeout(() => {
+        setIsTyping(false);
+      },1500);
+    });
+
   }, [selectedChat]);
 
   useEffect(() => {
@@ -165,6 +180,11 @@ const ChatArea = ({ socket }) => {
             </div>
           )}
           <h1 className="uppercase">{receipentUser.name}</h1>
+          {isTyping && (
+            <h2 className="text-blue-500 text-primary  p-2 w-max">
+              typing...
+            </h2>
+          )}
         </div>
         <hr />
       </div>
@@ -205,6 +225,12 @@ const ChatArea = ({ socket }) => {
           value={newMessage}
           onChange={(e) => {
             setNewMessage(e.target.value);
+            //real-time typing using socket.io
+            socket.emit("typing", {
+              chat: selectedChat._id,
+              members: selectedChat.members.map((mem) => mem._id),
+              sender: user._id,
+            });
           }}
         />
         <button
