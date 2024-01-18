@@ -16,4 +16,6 @@ axiosInstance.interceptors.request.use((config) => {
   return config;
 });
 
+export const baseUrl = 'https://chat-app-backend-neop.onrender.com';
+
 export default axiosInstance;

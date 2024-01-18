@@ -4,7 +4,9 @@ import ChatArea from './components/ChatArea';
 import UsersList from './components/UsersList';
 import { useSelector } from 'react-redux';
 import {io} from 'socket.io-client';
-const socket = io('http://localhost:5000');
+import { baseUrl } from '../../apicalls';
+
+const socket = io(baseUrl || 'http://localhost:5000');
 
 const Home = () => {
 
