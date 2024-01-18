@@ -6,7 +6,7 @@ const dbconfig = require("./dbconfig");
 const userRoutes = require("./Routes/userRoutes");
 const chatRoutes = require("./Routes/chatRoutes");
 const messageRoutes = require("./Routes/messagesRoute");
-
+const cors = require('cors');
 app.use(
     express.json({
       limit: "50mb",
