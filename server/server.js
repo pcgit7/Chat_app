@@ -61,7 +61,7 @@ io.on("connection", (socket) => {
   })
 });
 
-app.use(`${baseUrl}/apiusers", userRoutes);
-app.use(`${baseUrl}/apichats", chatRoutes);
-app.use(`${baseUrl}/apimessage", messageRoutes);
+app.use("api/users", userRoutes);
+app.use("/api/chats", chatRoutes);
+app.use("/api/message", messageRoutes);
 server.listen(port, () => console.log("server runnning on", port));
